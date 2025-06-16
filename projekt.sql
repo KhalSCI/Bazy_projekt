@@ -60,7 +60,7 @@ CREATE TABLE Semestry (
 
 -- Tabela Zapisy (student, semestr, przedmiot)
 CREATE TABLE Zapisy (
-    ID_zapisu NUMBER NOT NULL,
+    ID_zapisu NUMBER PRIMARY KEY,
     ID_studenta NUMBER NOT NULL,
     ID_semestru NUMBER NOT NULL,
     ID_przedmiotu NUMBER NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE Zapisy (
     Ocena_koncowa NUMBER(1) CHECK (Ocena_koncowa IN (2, 3, 4, 5)) ,
     Status_zapisu VARCHAR2(20) DEFAULT 'zapisany' CHECK (Status_zapisu IN ('zapisany', 'zaliczony', 'niezaliczony', 'rezygnacja')),
     Punkty_ECTS_uzyskane NUMBER DEFAULT 0,
-    PRIMARY KEY (ID_studenta, ID_semestru, ID_zapisu),
+    CONSTRAINT uk_zapisy_unique UNIQUE (ID_studenta, ID_semestru, ID_przedmiotu),
     CONSTRAINT fk_zapisy_studenci FOREIGN KEY (ID_studenta) REFERENCES Studenci(ID_studenta) ON DELETE CASCADE,
     CONSTRAINT fk_zapisy_semestry FOREIGN KEY (ID_semestru) REFERENCES Semestry(ID_semestru) ON DELETE CASCADE,
     CONSTRAINT fk_zapisy_przedmioty FOREIGN KEY (ID_przedmiotu) REFERENCES Przedmioty(ID_przedmiotu)
@@ -114,21 +114,21 @@ INSERT INTO Semestry VALUES (2, '2024/2025', 'letni', DATE '2025-02-16', DATE '2
 -- Zapisy na przedmioty
 INSERT INTO Zapisy VALUES (1, 1, 1, 1, SYSDATE, NULL, 'zapisany', 0);
 INSERT INTO Zapisy VALUES (2, 1, 1, 4, SYSDATE, NULL, 'zapisany', 0);
-INSERT INTO Zapisy VALUES (1, 2, 1, 3, SYSDATE, NULL, 'zapisany', 0);
-INSERT INTO Zapisy VALUES (1, 3, 1, 5, SYSDATE, NULL, 'zapisany', 0);
-INSERT INTO Zapisy VALUES (1, 4, 1, 1, SYSDATE, NULL, 'zapisany', 0);
-INSERT INTO Zapisy VALUES (2, 4, 1, 2, SYSDATE, NULL, 'zapisany', 0);
-INSERT INTO Zapisy VALUES (1, 5, 1, 3, SYSDATE, NULL, 'zapisany', 0);
-INSERT INTO Zapisy VALUES (2, 5, 1, 1, SYSDATE, NULL, 'zapisany', 0);
-INSERT INTO Zapisy VALUES (1, 6, 1, 5, SYSDATE, NULL, 'zapisany', 0);
-INSERT INTO Zapisy VALUES (2, 6, 1, 4, SYSDATE, NULL, 'zapisany', 0);
+INSERT INTO Zapisy VALUES (3, 2, 1, 3, SYSDATE, NULL, 'zapisany', 0);
+INSERT INTO Zapisy VALUES (4, 3, 1, 5, SYSDATE, NULL, 'zapisany', 0);
+INSERT INTO Zapisy VALUES (5, 4, 1, 1, SYSDATE, NULL, 'zapisany', 0);
+INSERT INTO Zapisy VALUES (6, 4, 1, 2, SYSDATE, NULL, 'zapisany', 0);
+INSERT INTO Zapisy VALUES (7, 5, 1, 3, SYSDATE, NULL, 'zapisany', 0);
+INSERT INTO Zapisy VALUES (8, 5, 1, 1, SYSDATE, NULL, 'zapisany', 0);
+INSERT INTO Zapisy VALUES (9, 6, 1, 5, SYSDATE, NULL, 'zapisany', 0);
+INSERT INTO Zapisy VALUES (10, 6, 1, 4, SYSDATE, NULL, 'zapisany', 0);
 
 -- ===================================
 -- Przykładowe operacje
 -- ===================================
 
 -- 1. Zapis studenta na nowy przedmiot
-INSERT INTO Zapisy VALUES (3, 1, 1, 2, SYSDATE, NULL, 'zapisany', 0);
+INSERT INTO Zapisy VALUES (11, 1, 1, 2, SYSDATE, NULL, 'zapisany', 0);
 
 -- Sprawdzenie limitu miejsc
 UPDATE Przedmioty 
@@ -140,12 +140,12 @@ UPDATE Zapisy
 SET Ocena_koncowa = 5, 
     Status_zapisu = 'zaliczony',
     Punkty_ECTS_uzyskane = (SELECT Punkty_ECTS FROM Przedmioty WHERE ID_przedmiotu = 1)
-WHERE ID_studenta = 1 AND ID_semestru = 1 AND ID_zapisu = 1;
+WHERE ID_zapisu = 1;
 
 -- 3. Rezygnacja z przedmiotu
 UPDATE Zapisy 
 SET Status_zapisu = 'rezygnacja' 
-WHERE ID_studenta = 1 AND ID_semestru = 1 AND ID_zapisu = 3;
+WHERE ID_zapisu = 11;
 
 -- Przywrócenie miejsca
 UPDATE Przedmioty 
@@ -155,24 +155,24 @@ WHERE ID_przedmiotu = 2;
 -- Student nie zalicza przedmiotu
 UPDATE Zapisy
 SET Ocena_koncowa = 2, Status_zapisu = 'niezaliczony', Punkty_ECTS_uzyskane = 0
-WHERE ID_studenta = 1 AND ID_semestru = 1 AND ID_zapisu = 1;
+WHERE ID_zapisu = 1;
 
 -- Ewa zalicza Bazy danych
 UPDATE Zapisy 
 SET Ocena_koncowa = 4, Status_zapisu = 'zaliczony', 
     Punkty_ECTS_uzyskane = (SELECT Punkty_ECTS FROM Przedmioty WHERE ID_przedmiotu = 2)
-WHERE ID_studenta = 4 AND ID_semestru = 1 AND ID_zapisu = 2;
+WHERE ID_zapisu = 6;
 
 -- Tomasz rezygnuje z Podstaw programowania
 UPDATE Zapisy 
 SET Status_zapisu = 'rezygnacja'
-WHERE ID_studenta = 5 AND ID_semestru = 1 AND ID_zapisu = 2;
+WHERE ID_zapisu = 8;
 
 -- Katarzyna zalicza Fizyka ogólna
 UPDATE Zapisy 
 SET Ocena_koncowa = 5, Status_zapisu = 'zaliczony', 
     Punkty_ECTS_uzyskane = (SELECT Punkty_ECTS FROM Przedmioty WHERE ID_przedmiotu = 5)
-WHERE ID_studenta = 6 AND ID_semestru = 1 AND ID_zapisu = 1;
+WHERE ID_zapisu = 9;
 
 -- ===================================
 -- Przykładowe zapytania
